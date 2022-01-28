@@ -1,6 +1,8 @@
 const theProjectName = "[vectorTable]"
 const theXmlns = "http://www.w3.org/2000/svg";
 let elements = new Array();
+const class_backGround = "_vtBackGround"
+const key_backGroundColor = "background_color"
 
 //Window Resize Event
 function _vtResizeWindow(event){
@@ -9,10 +11,16 @@ function _vtResizeWindow(event){
         let elemHeight = elem.getBoundingClientRect().height;
         let viewBoxText = "0 0 " + elemWidth + " " + elemHeight;
 
-        let ef = elem.lastElementChild;
+        let ef = elem.firstElementChild;
         ef.setAttribute("width", elemWidth );
         ef.setAttribute("height", elemHeight);
         ef.setAttribute("viewBox", viewBoxText);
+
+        let backgrounds = ef.getElementsByClassName(class_backGround);
+        Array.from(backgrounds).forEach(b =>{
+            b.setAttribute("width", elemWidth);
+            b.setAttribute("height", elemHeight);
+        });
     });
 }
 
@@ -34,6 +42,24 @@ function _vtCheckSetting(setting)
     }
 }
 
+//Generate background
+function _vtGenBackGround(setting, w, h)
+{
+    let background = document.createElementNS(theXmlns,"rect")
+    background.setAttribute("x", 0);
+    background.setAttribute("y", 0);
+    background.setAttribute("width", w);
+    background.setAttribute("height", h);
+    if(key_backGroundColor in setting){
+        background.setAttribute("fill", setting.background_color)
+    }else{
+        background.setAttribute("fill", "white");
+    }
+    background.classList.add(class_backGround)
+
+    return background
+}
+
 //Append SVG Area to Elem
 function _vtAppendSvgArea(setting)
 {
@@ -50,6 +76,10 @@ function _vtAppendSvgArea(setting)
     svg.setAttribute("width", elemWidth);
     svg.setAttribute("height", elemHeight);
     svg.setAttribute("viewBox", viewBoxText);
+
+    //Append background
+    svg.appendChild(_vtGenBackGround(setting, elemWidth, elemHeight))
+
     elem.appendChild(svg);
 
     //Push to Global element array
