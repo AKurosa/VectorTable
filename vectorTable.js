@@ -62,7 +62,7 @@ function _vtResizeWindow(event){
 window.addEventListener('resize', _vtResizeWindow);
 
 //mouse wheel Event
-function _vtWheel(event)
+function _vtZoomByWheel(event)
 {
     event.preventDefault();
 
@@ -305,7 +305,7 @@ function _vtAppendSvgArea(setting)
     svg.classList.add(class_vtTable);
     elem.appendChild(svg);
 
-    elem.addEventListener('wheel', _vtWheel);
+    elem.addEventListener('wheel', _vtZoomByWheel);
 
     //Push to Global element array
     elements.push(elem);
