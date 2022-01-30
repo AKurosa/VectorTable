@@ -125,6 +125,70 @@ function _vtZoomByWheel(event)
     table.setAttribute("viewBox", table_view.join(" "));
 }
 
+let pan_startPt;
+let pan_target;
+let pan_viewBox;
+let pan_target_w, pan_target_h;
+let pan_flg;
+//mouse Drag Event
+//mouse down
+function _vtPanMousedown(event)
+{
+    event.preventDefault();
+    pan_flg = true;
+
+    pan_target = event.target;
+    while(!pan_target.classList.contains(class_vtTable)){
+        pan_target = pan_target.parentElement;
+    }
+    pan_viewBox = pan_target.getAttribute("viewBox").split(" ").map(s => {return Number(s)});
+    pan_target_w = Number(pan_target.getAttribute("width"));
+    pan_target_h = Number(pan_target.getAttribute("height"));
+
+    let pt = pan_target.createSVGPoint();
+    pt.x = event.x;
+    pt.y = event.y;
+
+    start_Pt = pt.matrixTransform(pan_target.getScreenCTM().inverse());
+}
+
+//mouse move
+function _vtPanMouseMove(event)
+{
+    if(pan_flg){
+        let pt = pan_target.createSVGPoint();
+        pt.x = event.x;
+        pt.y = event.y;
+
+        new_pt = pt.matrixTransform(pan_target.getScreenCTM().inverse());
+        let dx = new_pt.x - start_Pt.x;
+        let dy = new_pt.y - start_Pt.y;
+        pan_viewBox = [pan_viewBox[0] - dx, pan_viewBox[1] - dy, pan_viewBox[2], pan_viewBox[3]];
+
+        if(pan_viewBox[0] < 0){
+            pan_viewBox[0] = 0;
+        }else if(pan_viewBox[0] + pan_viewBox[2] > pan_target_w){
+            pan_viewBox[0] = pan_target_w - pan_viewBox[2];
+        }
+
+        if(pan_viewBox[1] < 0){
+            pan_viewBox[1] = 0;
+        }else if(pan_viewBox[1] + pan_viewBox[3] > pan_target_h){
+            pan_viewBox[1] = pan_target_h - pan_viewBox[3];
+        }
+
+        pan_target.setAttribute("viewBox", pan_viewBox.join(" "));
+    }
+}
+
+//mouse up
+function _vtMouseUp(event)
+{
+    pan_flg = false;
+}
+
+document.addEventListener('mouseup', _vtMouseUp);
+
 //check setting
 function _vtCheckSetting(setting)
 {
@@ -305,8 +369,11 @@ function _vtAppendSvgArea(setting)
     svg.classList.add(class_vtTable);
     elem.appendChild(svg);
 
+    //Add Zoom and Pan Event
     elem.addEventListener('wheel', _vtZoomByWheel);
-
+    elem.addEventListener('mousedown', _vtPanMousedown);
+    elem.addEventListener('mousemove', _vtPanMouseMove);
+    
     //Push to Global element array
     elements.push(elem);
 }
