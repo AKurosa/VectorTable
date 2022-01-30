@@ -2,6 +2,7 @@ const theProjectName = "[vectorTable]"
 const theXmlns = "http://www.w3.org/2000/svg";
 let elements = new Array(); 
 
+const class_vtTable = "_vtTable";
 const class_backGround = "_vtBackGround";
 const class_outerFrame = "_vtOuterFrame";
 
@@ -9,6 +10,8 @@ const key_backGroundColor = "background_color";
 
 const at_rowLineWidth = "a_rlw";
 const at_colLineWidth = "a_clw";
+
+const zoom_delta = 1.1;
 
 //Window Resize Event
 function _vtResizeWindow(event){
@@ -24,35 +27,167 @@ function _vtResizeWindow(event){
         ef.setAttribute("height", elemHeight);
         ef.setAttribute("viewBox", viewBoxText);
 
-        //Back Ground
-        let backgrounds = ef.getElementsByClassName(class_backGround);
-        Array.from(backgrounds).forEach(b =>{
-            b.setAttribute("width", elemWidth);
-            b.setAttribute("height", elemHeight);
+        let rects = ef.querySelectorAll("rect");
+        Array.from(rects).forEach(rect =>{
+            let old_x = Number(rect.getAttribute("x"));
+            rect.setAttribute("x", old_x * elemWidth / old_width);
+
+            let old_y = Number(rect.getAttribute("y"));
+            rect.setAttribute("y", old_y * elemHeight / old_height);
+
+            let old_w = Number(rect.getAttribute("width"));
+            rect.setAttribute("width", old_w * elemWidth / old_width);
+
+            let old_h = Number(rect.getAttribute("height"));
+            rect.setAttribute("height", old_h * elemHeight / old_height)
         });
 
-        //Outer Line
-        let outerFrame = ef.getElementsByClassName(class_outerFrame);
-        Array.from(outerFrame).forEach(o =>{
-            let children = o.children;
-            Array.from(children).forEach(c =>{
-                let old_x1 = Number(c.getAttribute("x1"));
-                c.setAttribute("x1", old_x1 * elemWidth / old_width);
+        let lines = ef.querySelectorAll("line");
+        Array.from(lines).forEach(line =>{
+            let old_x1 = Number(line.getAttribute("x1"));
+            line.setAttribute("x1", old_x1 * elemWidth / old_width);
 
-                let old_x2 = Number(c.getAttribute("x2"));
-                c.setAttribute("x2", old_x2 * elemWidth / old_width);
+            let old_x2 = Number(line.getAttribute("x2"));
+            line.setAttribute("x2", old_x2 * elemWidth / old_width);
 
-                let old_y1 = Number(c.getAttribute("y1"));
-                c.setAttribute("y1", old_y1 * elemHeight / old_height);
+            let old_y1 = Number(line.getAttribute("y1"));
+            line.setAttribute("y1", old_y1 * elemHeight / old_height);
 
-                let old_y2 = Number(c.getAttribute("y2"));
-                c.setAttribute("y2", old_y2 * elemHeight / old_height);
-            });
+            let old_y2 = Number(line.getAttribute("y2"));
+            line.setAttribute("y2", old_y2 * elemHeight / old_height);
         });
     });
 }
 
 window.addEventListener('resize', _vtResizeWindow);
+
+//mouse wheel Event
+function _vtZoomByWheel(event)
+{
+    event.preventDefault();
+
+    let table = event.target;
+    while(!table.classList.contains(class_vtTable)){
+        table = table.parentElement;
+    }
+    let table_view = table.getAttribute("viewBox").split(" ");
+    let table_w = Number(table.getAttribute("width"));
+    let table_h = Number(table.getAttribute("height"));
+
+    let pt = table.createSVGPoint();
+    pt.x = event.x;
+    pt.y = event.y;
+
+    let pt_table = pt.matrixTransform(table.getScreenCTM().inverse());
+
+    let new_view_w;
+    let new_view_h;
+    let new_view_x;
+    let new_view_y;
+
+    if(event.deltaY > 0){
+        new_view_w = Number(table_view[2])*zoom_delta;
+        new_view_h = Number(table_view[3])*zoom_delta;
+        if(new_view_w > table_w){
+            new_view_w = table_w;
+        }
+        if(new_view_h > table_h){
+            new_view_h = table_h;
+        }
+
+        new_view_x = pt_table.x + (Number(table_view[0]) - pt_table.x)*zoom_delta;
+        new_view_y = pt_table.y + (Number(table_view[1]) - pt_table.y)*zoom_delta;
+
+    }else{
+        new_view_w = Number(table_view[2])/zoom_delta;
+        new_view_h = Number(table_view[3])/zoom_delta;
+
+        new_view_x = pt_table.x + (Number(table_view[0]) - pt_table.x)/zoom_delta;
+        new_view_y = pt_table.y + (Number(table_view[1]) - pt_table.y)/zoom_delta;
+    }
+
+    if(new_view_x < 0){
+        new_view_x = 0;
+    }else if(new_view_x + new_view_w > table_w){
+        new_view_x = table_w - new_view_w;
+    }
+
+    if(new_view_y < 0){
+        new_view_y = 0;
+    }else if(new_view_y + new_view_h > table_h){
+        new_view_y = table_h - new_view_h;
+    }
+
+    table_view[0] = new_view_x.toString();
+    table_view[1] = new_view_y.toString();
+    table_view[2] = new_view_w.toString();
+    table_view[3] = new_view_h.toString();
+    table.setAttribute("viewBox", table_view.join(" "));
+}
+
+let pan_startPt;
+let pan_target;
+let pan_viewBox;
+let pan_target_w, pan_target_h;
+let pan_flg;
+//mouse Drag Event
+//mouse down
+function _vtPanMousedown(event)
+{
+    event.preventDefault();
+    pan_flg = true;
+
+    pan_target = event.target;
+    while(!pan_target.classList.contains(class_vtTable)){
+        pan_target = pan_target.parentElement;
+    }
+    pan_viewBox = pan_target.getAttribute("viewBox").split(" ").map(s => {return Number(s)});
+    pan_target_w = Number(pan_target.getAttribute("width"));
+    pan_target_h = Number(pan_target.getAttribute("height"));
+
+    let pt = pan_target.createSVGPoint();
+    pt.x = event.x;
+    pt.y = event.y;
+
+    start_Pt = pt.matrixTransform(pan_target.getScreenCTM().inverse());
+}
+
+//mouse move
+function _vtPanMouseMove(event)
+{
+    if(pan_flg){
+        let pt = pan_target.createSVGPoint();
+        pt.x = event.x;
+        pt.y = event.y;
+
+        new_pt = pt.matrixTransform(pan_target.getScreenCTM().inverse());
+        let dx = new_pt.x - start_Pt.x;
+        let dy = new_pt.y - start_Pt.y;
+        pan_viewBox = [pan_viewBox[0] - dx, pan_viewBox[1] - dy, pan_viewBox[2], pan_viewBox[3]];
+
+        if(pan_viewBox[0] < 0){
+            pan_viewBox[0] = 0;
+        }else if(pan_viewBox[0] + pan_viewBox[2] > pan_target_w){
+            pan_viewBox[0] = pan_target_w - pan_viewBox[2];
+        }
+
+        if(pan_viewBox[1] < 0){
+            pan_viewBox[1] = 0;
+        }else if(pan_viewBox[1] + pan_viewBox[3] > pan_target_h){
+            pan_viewBox[1] = pan_target_h - pan_viewBox[3];
+        }
+
+        pan_target.setAttribute("viewBox", pan_viewBox.join(" "));
+    }
+}
+
+//mouse up
+function _vtMouseUp(event)
+{
+    pan_flg = false;
+}
+
+document.addEventListener('mouseup', _vtMouseUp);
 
 //check setting
 function _vtCheckSetting(setting)
@@ -208,8 +343,37 @@ function _vtAppendSvgArea(setting)
         svg.appendChild(of)
     }
 
+    //Demo Line
+    for(let i=30; i<elemWidth; i+=30){
+        var demo_line = document.createElementNS(theXmlns,"line");
+        demo_line.setAttribute("x1", i);
+        demo_line.setAttribute("x2", i);
+        demo_line.setAttribute("y1", 0);
+        demo_line.setAttribute("y2", elemHeight);
+        demo_line.setAttribute("stroke-width",1);
+        demo_line.setAttribute("stroke","black");
+        svg.appendChild(demo_line);
+    }
+
+    for(let i=30; i<elemHeight; i+=30){
+        var demo_line = document.createElementNS(theXmlns,"line");
+        demo_line.setAttribute("x1", 0);
+        demo_line.setAttribute("x2", elemWidth);
+        demo_line.setAttribute("y1", i);
+        demo_line.setAttribute("y2", i);
+        demo_line.setAttribute("stroke-width",1);
+        demo_line.setAttribute("stroke","black");
+        svg.appendChild(demo_line);
+    }
+
+    svg.classList.add(class_vtTable);
     elem.appendChild(svg);
 
+    //Add Zoom and Pan Event
+    elem.addEventListener('wheel', _vtZoomByWheel);
+    elem.addEventListener('mousedown', _vtPanMousedown);
+    elem.addEventListener('mousemove', _vtPanMouseMove);
+    
     //Push to Global element array
     elements.push(elem);
 }

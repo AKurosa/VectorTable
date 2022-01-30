@@ -27,7 +27,8 @@ Setting:
 * outer_frame_stroke_width (Option):
   * Set outer frame's line width.
   * Default value is 5
-* outer_frame_stroke (Option):
+* outer_frame_stroke:
   * Set outer frame's color.
-  * Default value is SVG's default (Maybe black).
+  * You can use svg stroke color.
+    * "black", "gray", "#ccc",...
 
