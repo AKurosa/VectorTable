@@ -338,14 +338,27 @@ let _vtGetTextWHList = function(setting, divideHeader, body)
 
     for(let i=0; i<divideHeader.length; i++){
         for(let j=0; j<divideHeader[i].length; j++){
+            cellDataMatrix[i][j].row = true;
+            cellDataMatrix[i][j].col = true;
+        }
+    }
+
+    for(let i=0; i<divideHeader.length; i++){
+        for(let j=0; j<divideHeader[i].length; j++){
             if("col_span" in divideHeader[i][j]){
                 for(let k=1; k<divideHeader[i][j].col_span; k++){
                     cellDataMatrix[i][j+k] = JSON.parse(JSON.stringify(cellDataMatrix[i][j]));
+                }
+                for(let k=0; k<divideHeader[i][j].col_span-1; k++){
+                    cellDataMatrix[i][j+k].col = false;
                 }
             }
             if("row_span" in divideHeader[i][j]){
                 for(let k=1; k<divideHeader[i][j].row_span; k++){
                     cellDataMatrix[i+k][j] = JSON.parse(JSON.stringify(cellDataMatrix[i][j]));
+                }
+                for(k=0; k<divideHeader[i][j].row_span-1; k++){
+                    cellDataMatrix[i+k][j].row = false;
                 }
             }
         }
@@ -368,6 +381,8 @@ let _vtGetTextWHList = function(setting, divideHeader, body)
             text.textContent = cell;
 
             [cellData.w, cellData.h] = _vtGetTextWH(text);
+            cellData.row = true;
+            cellData.col = true;
             text.remove();
 
             cellDataVector.push(cellData);
@@ -692,7 +707,6 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
                 text.setAttribute("y", (cellDataMatrix[i][j].y - maxRowHeight[i]*0.15)*asp);
                 text.setAttribute("font-size", text_font_size*asp);
                 text.setAttribute("stroke", text_font_stroke);
-                //text.setAttribute("fill", text_font_stroke);
                 text.setAttribute("stroke-width", text_font_stroke_width*asp);
                 text.textContent = divideHeader[i][j].value;
 
@@ -709,11 +723,147 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
             text.setAttribute("y", (cellDataMatrix[i+divideHeader.length][j].y - maxRowHeight[i+divideHeader.length]*0.15)*asp);
             text.setAttribute("font-size", text_font_size*asp);
             text.setAttribute("stroke", text_font_stroke);
-            //text.setAttribute("fill", text_font_stroke);
             text.setAttribute("stroke-width", text_font_stroke_width*asp);
             text.textContent = body[i][j];
 
             svg.appendChild(text);
+        }
+    }
+}
+
+let _vtCreateAndAppendFrame = function(svg, setting, cellDataMatrix, asp, svg_size)
+{
+    let stroke_width = 1;
+    if("stroke_width" in setting){
+        stroke_width = setting.stroke_width;
+    }
+
+    let stroke = "black";
+    if("stroke" in setting){
+        stroke = setting.stroke;
+    }
+
+    let m_l = 0;
+    if("text_margin_left" in setting){
+        m_l = setting.text_margin_left;
+    }
+    let m_b = 0;
+    if("text_margin_bottom" in setting){
+        m_b = setting.text_margin_bottom;
+    }
+
+    //row dir line
+    if(!("row_dir_line" in setting) || setting.row_dir_line){
+        let line_u = document.createElementNS(theXmlns, "line");
+        line_u.setAttribute("x1", 0);
+        line_u.setAttribute("x2", svg_size.w*asp);
+        line_u.setAttribute("y1", stroke_width/2*asp);
+        line_u.setAttribute("y2", stroke_width/2*asp);
+        line_u.setAttribute("stroke-width", stroke_width*asp);
+        line_u.setAttribute("stroke", stroke);
+        svg.appendChild(line_u);
+
+        for(let i=0; i<cellDataMatrix.length-1; i++){
+            let y = (cellDataMatrix[i][0].y + m_b + stroke_width/2)*asp;
+            if(cellDataMatrix[i][0].row){
+                let line = document.createElementNS(theXmlns, "line");
+                line.setAttribute("x1", 0);
+                line.setAttribute("x2", (cellDataMatrix[i][1].x - m_l)*asp);
+                line.setAttribute("y1", y);
+                line.setAttribute("y2", y);
+                line.setAttribute("stroke-width", stroke_width*asp);
+                line.setAttribute("stroke", stroke);
+                svg.appendChild(line);
+            }
+            for(let j=1; j<cellDataMatrix[i].length-1; j++){
+                if(cellDataMatrix[i][j].row){
+                    let line = document.createElementNS(theXmlns, "line");
+                    line.setAttribute("x1", (cellDataMatrix[i][j].x - m_l)*asp);
+                    line.setAttribute("x2", (cellDataMatrix[i][j+1].x - m_l)*asp);
+                    line.setAttribute("y1", y);
+                    line.setAttribute("y2", y);
+                    line.setAttribute("stroke-width", stroke_width*asp);
+                    line.setAttribute("stroke", stroke);
+                    svg.appendChild(line);
+                }
+            }
+            let last = cellDataMatrix[i].length - 1;
+            if(cellDataMatrix[i][last].row){
+                let line = document.createElementNS(theXmlns, "line");
+                line.setAttribute("x1", (cellDataMatrix[i][last].x - m_l)*asp);
+                line.setAttribute("x2", svg_size.w*asp);
+                line.setAttribute("y1", y);
+                line.setAttribute("y2", y);
+                line.setAttribute("stroke-width", stroke_width*asp);
+                line.setAttribute("stroke", stroke);
+                svg.appendChild(line);
+            }
+        }
+
+        let line_b = document.createElementNS(theXmlns, "line");
+        line_b.setAttribute("x1", 0);
+        line_b.setAttribute("x2", svg_size.w*asp);
+        line_b.setAttribute("y1", (svg_size.h - stroke_width/2)*asp);
+        line_b.setAttribute("y2", (svg_size.h - stroke_width/2)*asp);
+        line_b.setAttribute("stroke-width", stroke_width*asp);
+        line_b.setAttribute("stroke", stroke);
+        svg.appendChild(line_b);
+    }
+
+    //col dir line
+    if(!("col_dir_line" in setting) || setting.col_dir_line){
+        let line_l = document.createElementNS(theXmlns, "line");
+        line_l.setAttribute("x1", stroke_width/2*asp);
+        line_l.setAttribute("x2", stroke_width/2*asp);
+        line_l.setAttribute("y1", 0);
+        line_l.setAttribute("y2", svg_size.h*asp);
+        line_l.setAttribute("stroke-width", stroke_width*asp);
+        line_l.setAttribute("stroke", stroke);
+        svg.appendChild(line_l);
+
+        let line_r = document.createElementNS(theXmlns, "line");
+        line_r.setAttribute("x1", (svg_size.w - stroke_width/2)*asp);
+        line_r.setAttribute("x2", (svg_size.w - stroke_width/2)*asp);
+        line_r.setAttribute("y1", 0);
+        line_r.setAttribute("y2", svg_size.h*asp);
+        line_r.setAttribute("stroke-width", stroke_width*asp);
+        line_r.setAttribute("stroke", stroke);
+        svg.appendChild(line_r);
+
+        for(let i=0; i<cellDataMatrix.length; i++){
+            for(let j=0; j<cellDataMatrix[i].length-1; j++){
+                let x = (cellDataMatrix[i][j+1].x - m_l - stroke_width/2)*asp;
+                if(cellDataMatrix[i][j].col){
+                    if(i == 0){
+                        let line = document.createElementNS(theXmlns, "line");
+                        line.setAttribute("x1", x);
+                        line.setAttribute("x2", x);
+                        line.setAttribute("y1", 0);
+                        line.setAttribute("y2", (cellDataMatrix[i][j].y + m_b)*asp);
+                        line.setAttribute("stroke-width", stroke_width*asp);
+                        line.setAttribute("stroke", stroke);
+                        svg.appendChild(line);
+                    }else if(i == cellDataMatrix.length-1){
+                        let line = document.createElementNS(theXmlns, "line");
+                        line.setAttribute("x1", x);
+                        line.setAttribute("x2", x);
+                        line.setAttribute("y1", (cellDataMatrix[i-1][j].y + m_b)*asp);
+                        line.setAttribute("y2", svg_size.h*asp);
+                        line.setAttribute("stroke-width", stroke_width*asp);
+                        line.setAttribute("stroke", stroke);
+                        svg.appendChild(line);
+                    }else{
+                        let line = document.createElementNS(theXmlns, "line");
+                        line.setAttribute("x1", x);
+                        line.setAttribute("x2", x);
+                        line.setAttribute("y1", (cellDataMatrix[i-1][j].y + m_b)*asp);
+                        line.setAttribute("y2", (cellDataMatrix[i][j].y + m_b)*asp);
+                        line.setAttribute("stroke-width", stroke_width*asp);
+                        line.setAttribute("stroke", stroke);
+                        svg.appendChild(line);
+                    }
+                }
+            }
         }
     }
 }
@@ -749,6 +899,26 @@ let _vtCreateAndAppendOuterFrame = function(svg, setting, svg_size, asp)
                 line_b.setAttribute("stroke", outer_frame_stroke);
                 svg.appendChild(line_b);
             }
+
+            if(!("col_dir_line" in setting) || setting.col_dir_line){
+                let line_l = document.createElementNS(theXmlns, "line");
+                line_l.setAttribute("x1", outer_frame_stroke_width/2*asp);
+                line_l.setAttribute("x2", outer_frame_stroke_width/2*asp);
+                line_l.setAttribute("y1", 0);
+                line_l.setAttribute("y2", svg_size.h*asp);
+                line_l.setAttribute("stroke-width", outer_frame_stroke_width*asp);
+                line_l.setAttribute("stroke", outer_frame_stroke);
+                svg.appendChild(line_l);
+
+                let line_r = document.createElementNS(theXmlns, "line");
+                line_r.setAttribute("x1", (svg_size.w - outer_frame_stroke_width/2)*asp);
+                line_r.setAttribute("x2", (svg_size.w - outer_frame_stroke_width/2)*asp);
+                line_r.setAttribute("y1", 0);
+                line_r.setAttribute("y2", svg_size.h*asp);
+                line_r.setAttribute("stroke-width", outer_frame_stroke_width*asp);
+                line_r.setAttribute("stroke", outer_frame_stroke);
+                svg.appendChild(line_r);
+            }
         }
     }
 }
@@ -767,5 +937,6 @@ function addVectorTable(setting, header, body)
     [svg, asp] = _vtCreateAndAppendSVG(setting, svg_size);
     let background = _vtCreateAndAppendBackground(svg, setting, svg_size, asp);
     _vtPutContents(svg, setting, divideHeader, body, cellMatrix, asp, maxRowHeights);
-    _vtCreateAndAppendOuterFrame(svg, setting, svg_size, asp);
+    _vtCreateAndAppendFrame(svg, setting, cellMatrix, asp, svg_size);
+    //_vtCreateAndAppendOuterFrame(svg, setting, svg_size, asp);
 }
