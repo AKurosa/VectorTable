@@ -19,17 +19,85 @@
         <script>
             const demo_setting = {
                 id: "idTest",
-                background_color: "#eee",
+                background_color: "#eeeeee",
                 row_dir_line: true,
                 col_dir_line: true,
                 outer_frame: true,
-                outer_frame_stroke_width: 5,
-                outer_frame_stroke: "#999"
-            };
-            addVectorTable(demo_setting);
+                outer_frame_stroke_width: 4,
+                outer_frame_stroke: "#333",
 
-            demo_setting.id = "idTest2";
-            addVectorTable(demo_setting);
+                header_row: true,
+                header_col: true,
+                header_stroke_width: 3,
+                header_stroke: "#555",
+                header_col_pos: 1,
+
+                text_margin_top: 0,
+                text_margin_bottom: 0,
+                text_margin_right: 5,
+                text_margin_left: 5,
+                text_font_size: 30,
+                text_font_stroke_width: 1,
+                text_font_stroke: "black",
+
+                stroke_width: 2,
+                stroke: "#999"
+            };
+
+            //Demo headerhohyou
+            let headerMatrix = new Array();
+
+            //header line 1
+            let headerLine1 = new Array();
+            const no = {
+                value: "No.",
+                type: "value",
+                row_span: 2,
+            }
+            headerLine1.push(no);
+
+            let th = {
+                value: "personal infomation",
+                type: "value",
+                col_span: 2
+            };
+            headerLine1.push(th);
+
+            let tha = th = {
+                value: "other",
+                type: "value",
+                col_span: 3
+            };
+            headerLine1.push(tha);
+            headerMatrix.push(headerLine1);
+
+            //header line 2
+            let contents = new Array("Name", "location", "e-mail", "phone number", "favorite");
+            let headerLine2 = new Array();
+            contents.forEach(content =>{
+                let th2 = {
+                    value: content,
+                    type: "value"
+                }
+                headerLine2.push(th2);
+            });
+            headerMatrix.push(headerLine2);
+
+            let dataMatrix = new Array();
+            for(let i=0; i<20; i++){
+                let dataLine = new Array();
+                dataLine.push(i);
+                for(let j=0; j<5; j++){
+                    dataLine.push("Dj" + i +"-"+ j);
+                }
+                dataMatrix.push(dataLine);
+            }
+
+            addVectorTable(demo_setting, headerMatrix, dataMatrix);
+
+            //demo_setting.id = "idTest2";
+            //demo_setting.row_height = 10;
+            //addVectorTable(demo_setting, headerMatrix);
         </script>
     </body>
 </html>
