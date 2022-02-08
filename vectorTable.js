@@ -868,6 +868,67 @@ let _vtCreateAndAppendFrame = function(svg, setting, cellDataMatrix, asp, svg_si
     }
 }
 
+let _vtCreateAndAppendHeaderFrame = function(svg, setting, cellDataMatrix, asp, svg_size, numHeaderRow)
+{
+    //row
+    if(!("row_dir_line" in setting) || setting.row_dir_line){
+        if("header_row" in setting){
+            if(setting.header_row){
+                let stroke_width = 3;
+                if("header_stroke_width" in setting){
+                    stroke_width = setting.header_stroke_width;
+                }
+                let stroke = "black";
+                if("header_stroke" in setting){
+                    stroke = setting.header_stroke;
+                }
+                let m_b = 0;
+                if("text_margin_bottom" in setting){
+                    m_b = setting.text_margin_bottom;
+                }
+
+                let line = document.createElementNS(theXmlns, "line");
+                line.setAttribute("x1", 0);
+                line.setAttribute("x2", svg_size.w*asp);
+                line.setAttribute("y1", (cellDataMatrix[numHeaderRow-1][0].y + m_b + stroke_width/2)*asp);
+                line.setAttribute("y2", (cellDataMatrix[numHeaderRow-1][0].y + m_b + stroke_width/2)*asp);
+                line.setAttribute("stroke-width", stroke_width*asp);
+                line.setAttribute("stroke", stroke);
+                svg.appendChild(line);
+            }
+        }
+    }
+
+    //col
+    if(!("col_dir_line" in setting) || setting.col_dir_line){
+        if("header_col" in setting){
+            if(setting.header_col){
+                let stroke_width = 3;
+                if("header_stroke_width" in setting){
+                    stroke_width = setting.header_stroke_width;
+                }
+                let stroke = "black";
+                if("header_stroke" in setting){
+                    stroke = setting.header_stroke;
+                }
+                let m_l = 0;
+                if("text_margin_left" in setting){
+                    m_l = setting.text_margin_left;
+                }
+
+                let line = document.createElementNS(theXmlns, "line");
+                line.setAttribute("x1", (cellDataMatrix[0][setting.header_col_pos].x - m_l - stroke_width/2)*asp);
+                line.setAttribute("x2", (cellDataMatrix[0][setting.header_col_pos].x - m_l - stroke_width/2)*asp);
+                line.setAttribute("y1", 0);
+                line.setAttribute("y2", svg_size.h*asp);
+                line.setAttribute("stroke-width", stroke_width*asp);
+                line.setAttribute("stroke", stroke);
+                svg.appendChild(line);
+            }
+        }
+    }
+}
+
 let _vtCreateAndAppendOuterFrame = function(svg, setting, svg_size, asp)
 {
     if("outer_frame" in setting){
@@ -938,5 +999,6 @@ function addVectorTable(setting, header, body)
     let background = _vtCreateAndAppendBackground(svg, setting, svg_size, asp);
     _vtPutContents(svg, setting, divideHeader, body, cellMatrix, asp, maxRowHeights);
     _vtCreateAndAppendFrame(svg, setting, cellMatrix, asp, svg_size);
-    //_vtCreateAndAppendOuterFrame(svg, setting, svg_size, asp);
+    _vtCreateAndAppendHeaderFrame(svg, setting, cellMatrix, asp, svg_size, divideHeader.length);
+    _vtCreateAndAppendOuterFrame(svg, setting, svg_size, asp);
 }
