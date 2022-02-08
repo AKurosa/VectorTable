@@ -5,6 +5,7 @@ let elements = new Array();
 const class_vtTable = "_vtTable";
 
 const zoom_delta = 1.1;
+const text_offset = 0.2;
 
 //Window Resize Event
 let _vtResizeWindow = function(event)
@@ -501,7 +502,7 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
         //text width + margin left
         cellDataMatrix[i][0].x = margin_left;
         for(let j=1; j<cellDataMatrix[i].length; j++){
-            cellDataMatrix[i][j].x = cellDataMatrix[i][j-1].x + maxColWidths[j-1];
+            cellDataMatrix[i][j].x = cellDataMatrix[i][j-1].x + maxColWidths[j-1] + margin_left;
         }
         //+ margin right
         if(margin_right != 0){
@@ -706,22 +707,77 @@ let _vtCreateAndAppendBackground = function(svg, setting, svg_size, asp)
     return background;
 }
 
+let _vtCreateAndAppendHeaderBackground = function(svg, setting, cellDataMatrix, svg_size, asp, numHeaderRow)
+{
+    if("header_background_color" in setting){
+        if("header_row" in setting){
+            if(setting.header_row){
+                let m_b = 0;
+                if("text_margin_bottom" in setting){
+                    m_b = setting.text_margin_bottom;
+                }
+
+                let back_row = document.createElementNS(theXmlns, "rect");
+                back_row.setAttribute("x", 0);
+                back_row.setAttribute("y", 0);
+                back_row.setAttribute("width", svg_size.w * asp);
+                back_row.setAttribute("height", (cellDataMatrix[numHeaderRow-1][0].y + m_b)*asp);
+                back_row.setAttribute("fill", setting.header_background_color);
+                svg.appendChild(back_row);
+            }
+        }
+
+        if("header_col" in setting){
+            if(setting.header_col){
+                let m_l = 0;
+                if("text_margin_left" in setting){
+                    m_l = setting.text_margin_left;
+                }
+
+                let back_col = document.createElementNS(theXmlns, "rect");
+                back_col.setAttribute("x", 0);
+                back_col.setAttribute("y", 0);
+                back_col.setAttribute("width", (cellDataMatrix[0][setting.header_col_pos].x - m_l)*asp);
+                back_col.setAttribute("height", svg_size.h * asp);
+                back_col.setAttribute("fill", setting.header_background_color);
+                svg.appendChild(back_col);
+            }
+        }
+    }
+}
+
 let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, asp, maxRowHeight)
 {
-    text_font_size = 10;
+    let text_font_size = 10;
     if("text_font_size" in setting){
         text_font_size = setting.text_font_size;
     }
 
-    text_font_stroke_width = 0.5;
+    let text_font_stroke_width = 0.1;
     if("text_font_stroke_width" in setting){
         text_font_stroke_width = setting.text_font_stroke_width;
     }
 
-    text_font_stroke = "black";
+    let text_font_stroke = "black";
     if("text_font_stroke" in setting){
         text_font_stroke = setting.text_font_stroke;
     }
+
+    let header_font_stroke = text_font_stroke;
+    if("header_font_stroke" in setting){
+        header_font_stroke = setting.header_font_stroke;
+    }
+
+    let header_font_stroke_width = text_font_stroke_width;
+    if("header_font_stroke_width" in setting){
+        header_font_stroke_width = setting.header_font_stroke_width;
+    }
+
+    let header_col_pos = 0;
+    if("header_col_pos" in setting){
+        header_col_pos = setting.header_col_pos;
+    }
+
 
     //header
     for(let i=0; i<divideHeader.length; i++){
@@ -729,10 +785,11 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
             if("value" in divideHeader[i][j]){
                 let text = document.createElementNS(theXmlns,"text");
                 text.setAttribute("x", cellDataMatrix[i][j].x*asp);
-                text.setAttribute("y", (cellDataMatrix[i][j].y - maxRowHeight[i]*0.15)*asp);
+                text.setAttribute("y", (cellDataMatrix[i][j].y - maxRowHeight[i]*text_offset)*asp);
                 text.setAttribute("font-size", text_font_size*asp);
-                text.setAttribute("stroke", text_font_stroke);
-                text.setAttribute("stroke-width", text_font_stroke_width*asp);
+                text.setAttribute("stroke", header_font_stroke);
+                text.setAttribute("fill", header_font_stroke);
+                text.setAttribute("stroke-width", header_font_stroke_width*asp);
                 text.textContent = divideHeader[i][j].value;
 
                 svg.appendChild(text);
@@ -745,10 +802,17 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
         for(let j=0; j<body[j].length; j++){
             let text = document.createElementNS(theXmlns,"text");
             text.setAttribute("x", cellDataMatrix[i+divideHeader.length][j].x*asp);
-            text.setAttribute("y", (cellDataMatrix[i+divideHeader.length][j].y - maxRowHeight[i+divideHeader.length]*0.15)*asp);
+            text.setAttribute("y", (cellDataMatrix[i+divideHeader.length][j].y - maxRowHeight[i+divideHeader.length]*text_offset)*asp);
             text.setAttribute("font-size", text_font_size*asp);
-            text.setAttribute("stroke", text_font_stroke);
-            text.setAttribute("stroke-width", text_font_stroke_width*asp);
+            if(j < header_col_pos){
+                text.setAttribute("stroke", header_font_stroke);
+                text.setAttribute("fill", header_font_stroke);
+                text.setAttribute("stroke-width", header_font_stroke_width*asp);
+            }else{
+                text.setAttribute("stroke", text_font_stroke);
+                text.setAttribute("fill", text_font_stroke);
+                text.setAttribute("stroke-width", text_font_stroke_width*asp);
+            }
             text.textContent = body[i][j];
 
             svg.appendChild(text);
@@ -1021,7 +1085,8 @@ function addVectorTable(setting, header, body)
     let svg_size = _vtCalSvgSize(setting, maxColWidths, maxRowHeights);
     let svg, asp;
     [svg, asp] = _vtCreateAndAppendSVG(setting, svg_size);
-    let background = _vtCreateAndAppendBackground(svg, setting, svg_size, asp);
+    _vtCreateAndAppendBackground(svg, setting, svg_size, asp);
+    _vtCreateAndAppendHeaderBackground(svg, setting, cellMatrix, svg_size, asp, divideHeader.length);
     _vtPutContents(svg, setting, divideHeader, body, cellMatrix, asp, maxRowHeights);
     _vtCreateAndAppendFrame(svg, setting, cellMatrix, asp, svg_size);
     _vtCreateAndAppendHeaderFrame(svg, setting, cellMatrix, asp, svg_size, divideHeader.length);
