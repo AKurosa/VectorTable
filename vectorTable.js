@@ -15,40 +15,63 @@ let _vtResizeWindow = function(event)
         let viewBoxText = "0 0 " + elemWidth + " " + elemHeight;
 
         let ef = elem.firstElementChild;
-        let old_width = Number(ef.getAttribute("width"));
-        let old_height = Number(ef.getAttribute("height"));
+        let old_asp = Number(ef.getAttribute("_vt-asp"));
+        let w = Number(ef.getAttribute("_vt-w"));
+        let h = Number(ef.getAttribute("_vt-h"));
+
+        let asp = Math.min(elemWidth / w, elemHeight / h);
+
         ef.setAttribute("width", elemWidth);
         ef.setAttribute("height", elemHeight);
         ef.setAttribute("viewBox", viewBoxText);
+        ef.setAttribute("_vt-asp", asp);
 
         let rects = ef.querySelectorAll("rect");
         Array.from(rects).forEach(rect =>{
             let old_x = Number(rect.getAttribute("x"));
-            rect.setAttribute("x", old_x * elemWidth / old_width);
+            rect.setAttribute("x", old_x * asp / old_asp);
 
             let old_y = Number(rect.getAttribute("y"));
-            rect.setAttribute("y", old_y * elemHeight / old_height);
+            rect.setAttribute("y", old_y * asp / old_asp);
 
             let old_w = Number(rect.getAttribute("width"));
-            rect.setAttribute("width", old_w * elemWidth / old_width);
+            rect.setAttribute("width", old_w * asp / old_asp);
 
             let old_h = Number(rect.getAttribute("height"));
-            rect.setAttribute("height", old_h * elemHeight / old_height)
+            rect.setAttribute("height", old_h * asp / old_asp)
         });
 
         let lines = ef.querySelectorAll("line");
         Array.from(lines).forEach(line =>{
             let old_x1 = Number(line.getAttribute("x1"));
-            line.setAttribute("x1", old_x1 * elemWidth / old_width);
+            line.setAttribute("x1", old_x1 * asp / old_asp);
 
             let old_x2 = Number(line.getAttribute("x2"));
-            line.setAttribute("x2", old_x2 * elemWidth / old_width);
+            line.setAttribute("x2", old_x2 * asp / old_asp);
 
             let old_y1 = Number(line.getAttribute("y1"));
-            line.setAttribute("y1", old_y1 * elemHeight / old_height);
+            line.setAttribute("y1", old_y1 * asp / old_asp);
 
             let old_y2 = Number(line.getAttribute("y2"));
-            line.setAttribute("y2", old_y2 * elemHeight / old_height);
+            line.setAttribute("y2", old_y2 * asp / old_asp);
+
+            let stroke_width = Number(line.getAttribute("stroke-width"));
+            line.setAttribute("stroke-width", stroke_width * asp / old_asp);
+        });
+
+        let texts = ef.querySelectorAll("text");
+        Array.from(texts).forEach(text =>{
+            let old_x = Number(text.getAttribute("x"));
+            text.setAttribute("x", old_x * asp / old_asp);
+
+            let old_y = Number(text.getAttribute("y"));
+            text.setAttribute("y", old_y * asp / old_asp);
+
+            let font_size = Number(text.getAttribute("font-size"));
+            text.setAttribute("font-size", font_size * asp / old_asp);
+
+            let stroke_width = Number(text.getAttribute("stroke-width"));
+            text.setAttribute("stroke-width", stroke_width * asp / old_asp);
         });
     });
 }
@@ -646,6 +669,8 @@ let _vtCreateAndAppendSVG = function(setting, svg_size)
     svg.setAttribute("height", elemHeight);
     svg.setAttribute("viewBox", viewBoxText);
     svg.setAttribute("_vt-asp", asp);
+    svg.setAttribute("_vt-w", svg_size.w);
+    svg.setAttribute("_vt-h", svg_size.h);
     svg.classList.add(class_vtTable);
 
     //Append svg to elem
