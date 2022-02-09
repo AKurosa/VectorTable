@@ -6,6 +6,8 @@ const class_vtTable = "_vtTable";
 
 const zoom_delta = 1.1;
 const text_offset = 0.2;
+const contextmenu_num = 2;
+const context_font_size = 15;
 
 //Window Resize Event
 let _vtResizeWindow = function(event)
@@ -206,6 +208,101 @@ let _vtMouseUp = function(event)
 }
 
 document.addEventListener('mouseup', _vtMouseUp);
+
+//contextmenu
+//cansel
+let _vtContextMouseDown = function(event){
+    event.preventDefault();
+    
+    let contexts = document.getElementsByClassName("_vt-context");
+    Array.from(contexts).forEach(content =>{
+        content.remove();
+    });
+}
+
+//mouseover
+let _vtContextMouseOver = function(event)
+{
+    event.target.setAttribute("fill-opacity", "10%");
+}
+
+//mouseleave
+let _vtContextMouseLeave = function(event)
+{
+    event.target.setAttribute("fill-opacity", "0%");
+}
+
+//main
+let _vtAddContextmenu = function(event)
+{
+    event.preventDefault();
+    
+    let contexts = document.getElementsByClassName("_vt-context");
+    Array.from(contexts).forEach(content =>{
+        content.remove();
+    });
+
+    let table = event.target;
+    while(!table.classList.contains(class_vtTable)){
+        table = table.parentElement;
+    }
+
+    let ww = window.innerWidth;
+    let wh = window.innerHeight;
+    let style = "position: absolute; top: 0; left: 0; width: " + ww + "px; height: " + wh + "px;"
+    
+    let div = document.createElement("div");
+    div.setAttribute("style", style);
+    div.classList.add("_vt-context");
+    div.classList.add("_vt-context-base");
+
+    let context_svg = document.createElementNS(theXmlns, "svg");
+    context_svg.setAttribute("width", "100%");
+    context_svg.setAttribute("height", "100%");
+
+    let containerShadow = document.createElementNS(theXmlns, "rect");
+    containerShadow.setAttribute("x", event.pageX + 3);
+    containerShadow.setAttribute("y", event.pageY + 3);
+    containerShadow.setAttribute("height", contextmenu_num * context_font_size);
+    containerShadow.setAttribute("width", 100);
+    containerShadow.setAttribute("fill", "black");
+    containerShadow.setAttribute("fill-opacity", "30%");
+    context_svg.appendChild(containerShadow);
+
+    let container = document.createElementNS(theXmlns, "rect");
+    container.setAttribute("x", event.pageX);
+    container.setAttribute("y", event.pageY);
+    container.setAttribute("height", contextmenu_num * context_font_size);
+    container.setAttribute("width", 100);
+    container.setAttribute("fill", "white");
+    context_svg.appendChild(container);
+
+    //Save
+    let menue_save = document.createElementNS(theXmlns, "text");
+    menue_save.setAttribute("x", event.pageX);
+    menue_save.setAttribute("y", event.pageY + context_font_size - context_font_size*text_offset);
+    menue_save.setAttribute("font-size", context_font_size);
+    menue_save.setAttribute("stroke", "black");
+    menue_save.setAttribute("fill", "black");
+    menue_save.setAttribute("stroke-width", 0.05);
+    menue_save.textContent = "Save as PNG";
+    context_svg.appendChild(menue_save);
+
+    let menue_box_save = document.createElementNS(theXmlns, "rect");
+    menue_box_save.setAttribute("x", event.pageX);
+    menue_box_save.setAttribute("y", event.pageY);
+    menue_box_save.setAttribute("width", 100);
+    menue_box_save.setAttribute("height", context_font_size);
+    menue_box_save.setAttribute("fill", "black");
+    menue_box_save.setAttribute("fill-opacity", "0%");
+    menue_box_save.addEventListener("mouseover", _vtContextMouseOver);
+    menue_box_save.addEventListener("mouseleave", _vtContextMouseLeave);
+    context_svg.appendChild(menue_box_save);
+    
+    div.appendChild(context_svg);
+    div.addEventListener("mousedown", _vtContextMouseDown);
+    document.body.appendChild(div);
+}
 
 //check setting
 let _vtCheckSetting = function(setting)
@@ -681,6 +778,7 @@ let _vtCreateAndAppendSVG = function(setting, svg_size)
     elem.addEventListener('wheel', _vtZoomByWheel);
     elem.addEventListener('mousedown', _vtPanMousedown);
     elem.addEventListener('mousemove', _vtPanMouseMove);
+    elem.addEventListener('contextmenu', _vtAddContextmenu);
 
     //Push to Global element array
     elements.push(elem);
