@@ -586,8 +586,16 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
             }
         }
 
-        if(("header_row" in setting) && setting.header_row){
-            col_header_line_width = setting.header_stroke_width;
+        if("header_row" in setting){
+            if(setting.header_row){
+                col_dir_line_width = 1;
+                if("stroke_width" in setting){
+                    col_header_line_width = setting.stroke_width;
+                }
+                if("header_stroke_width" in setting){
+                    col_header_line_width = setting.header_stroke_width;
+                }
+            }
         }
     }
 
@@ -612,8 +620,16 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
             }
         }
 
-        if(("header_col" in setting) && setting.header_col){
-            row_header_line_width = setting.header_stroke_width;
+        if("header_col" in setting){
+            if(setting.header_col){
+                row_header_line_width = 1;
+                if("stroke_width" in setting){
+                    row_header_line_width = setting.stroke_width;
+                }
+                if("header_stroke_width" in setting){
+                    row_header_line_width = setting.header_stroke_width;
+                }
+            }
         }
     }
 
@@ -870,7 +886,7 @@ let _vtCreateAndAppendHeaderBackground = function(svg, setting, cellDataMatrix, 
 
 let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, asp, maxRowHeight)
 {
-    let text_font_size = 10;
+    let text_font_size = 10.0;
     if("text_font_size" in setting){
         text_font_size = setting.text_font_size;
     }
@@ -944,7 +960,7 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
 
 let _vtCreateAndAppendFrame = function(svg, setting, cellDataMatrix, asp, svg_size)
 {
-    let stroke_width = 1;
+    let stroke_width = 1.0;
     if("stroke_width" in setting){
         stroke_width = setting.stroke_width;
     }
@@ -1085,11 +1101,17 @@ let _vtCreateAndAppendHeaderFrame = function(svg, setting, cellDataMatrix, asp, 
     if(!("row_dir_line" in setting) || setting.row_dir_line){
         if("header_row" in setting){
             if(setting.header_row){
-                let stroke_width = 3;
+                let stroke_width = 1;
+                if("stroke_width" in setting){
+                    stroke_width = setting.stroke_width;
+                }
                 if("header_stroke_width" in setting){
                     stroke_width = setting.header_stroke_width;
                 }
                 let stroke = "black";
+                if("stroke" in setting){
+                    stroke = setting.stroke;
+                }
                 if("header_stroke" in setting){
                     stroke = setting.header_stroke;
                 }
@@ -1114,11 +1136,17 @@ let _vtCreateAndAppendHeaderFrame = function(svg, setting, cellDataMatrix, asp, 
     if(!("col_dir_line" in setting) || setting.col_dir_line){
         if("header_col" in setting){
             if(setting.header_col){
-                let stroke_width = 3;
+                let stroke_width = 1;
+                if("stroke_width" in setting){
+                    stroke_width = setting.stroke_width;
+                }
                 if("header_stroke_width" in setting){
                     stroke_width = setting.header_stroke_width;
                 }
                 let stroke = "black";
+                if("stroke" in setting){
+                    stroke = setting.stroke;
+                }
                 if("header_stroke" in setting){
                     stroke = setting.header_stroke;
                 }
@@ -1144,11 +1172,17 @@ let _vtCreateAndAppendOuterFrame = function(svg, setting, svg_size, asp)
 {
     if("outer_frame" in setting){
         if(setting.outer_frame){
-            outer_frame_stroke_width = 5;
+            outer_frame_stroke_width = 1;
+            if("stroke_width" in setting){
+                outer_frame_stroke_width = setting.stroke_width;
+            }
             if("outer_frame_stroke_width" in setting){
                 outer_frame_stroke_width = setting.outer_frame_stroke_width;
             }
             outer_frame_stroke = "black";
+            if("stroke" in setting){
+                outer_frame_stroke = setting.stroke;
+            }
             if("outer_frame_stroke" in setting){
                 outer_frame_stroke = setting.outer_frame_stroke;
             }
