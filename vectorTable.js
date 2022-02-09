@@ -5,6 +5,9 @@ let elements = new Array();
 const class_vtTable = "_vtTable";
 
 const zoom_delta = 1.1;
+const text_offset = 0.2;
+const contextmenu_num = 2;
+const context_font_size = 15;
 
 //Window Resize Event
 let _vtResizeWindow = function(event)
@@ -205,6 +208,125 @@ let _vtMouseUp = function(event)
 }
 
 document.addEventListener('mouseup', _vtMouseUp);
+
+//contextmenu
+let contextmenuTarget;
+//cansel
+let _vtContextMouseDown = function(event){
+    event.preventDefault();
+    
+    let contexts = document.getElementsByClassName("_vt-context");
+    Array.from(contexts).forEach(content =>{
+        content.remove();
+    });
+}
+
+//mouseover
+let _vtContextMouseOver = function(event)
+{
+    event.target.setAttribute("fill-opacity", "10%");
+}
+
+//mouseleave
+let _vtContextMouseLeave = function(event)
+{
+    event.target.setAttribute("fill-opacity", "0%");
+}
+
+//save
+//mousedown
+let _vtSaveAsPng = function(event)
+{
+    let canvas = document.createElement("canvas");
+    let svgData = new XMLSerializer().serializeToString(contextmenuTarget);
+    canvas.width = contextmenuTarget.width.baseVal.value;
+    canvas.height = contextmenuTarget.height.baseVal.value;
+    let ctx = canvas.getContext('2d');
+    let image = new Image;
+
+    image.onload = () =>{
+        ctx.drawImage(image, 0, 0);
+        let a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.setAttribute("download", "image.png");
+        a.dispatchEvent(new MouseEvent("click"));
+    };
+    
+    image.src = 'data:image/svg+xml;charset=utf-8;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+}
+
+//main
+let _vtAddContextmenu = function(event)
+{
+    event.preventDefault();
+    
+    let contexts = document.getElementsByClassName("_vt-context");
+    Array.from(contexts).forEach(content =>{
+        content.remove();
+    });
+
+    contextmenuTarget = event.target;
+    while(!contextmenuTarget.classList.contains(class_vtTable)){
+        contextmenuTarget = contextmenuTarget.parentElement;
+    }
+
+    let ww = window.innerWidth;
+    let wh = window.innerHeight;
+    let style = "position: absolute; top: 0; left: 0; width: " + ww + "px; height: " + wh + "px;"
+    
+    let div = document.createElement("div");
+    div.setAttribute("style", style);
+    div.classList.add("_vt-context");
+    div.classList.add("_vt-context-base");
+
+    let context_svg = document.createElementNS(theXmlns, "svg");
+    context_svg.setAttribute("width", "100%");
+    context_svg.setAttribute("height", "100%");
+
+    let containerShadow = document.createElementNS(theXmlns, "rect");
+    containerShadow.setAttribute("x", event.pageX + 3);
+    containerShadow.setAttribute("y", event.pageY + 3);
+    containerShadow.setAttribute("height", contextmenu_num * context_font_size);
+    containerShadow.setAttribute("width", 100);
+    containerShadow.setAttribute("fill", "black");
+    containerShadow.setAttribute("fill-opacity", "30%");
+    context_svg.appendChild(containerShadow);
+
+    let container = document.createElementNS(theXmlns, "rect");
+    container.setAttribute("x", event.pageX);
+    container.setAttribute("y", event.pageY);
+    container.setAttribute("height", contextmenu_num * context_font_size);
+    container.setAttribute("width", 100);
+    container.setAttribute("fill", "white");
+    context_svg.appendChild(container);
+
+    //Save
+    let menue_save = document.createElementNS(theXmlns, "text");
+    menue_save.setAttribute("x", event.pageX);
+    menue_save.setAttribute("y", event.pageY + context_font_size - context_font_size*text_offset);
+    menue_save.setAttribute("font-size", context_font_size);
+    menue_save.setAttribute("stroke", "black");
+    menue_save.setAttribute("fill", "black");
+    menue_save.setAttribute("stroke-width", 0.05);
+    menue_save.textContent = "Save as PNG";
+    context_svg.appendChild(menue_save);
+
+    let menue_box_save = document.createElementNS(theXmlns, "rect");
+    menue_box_save.setAttribute("x", event.pageX);
+    menue_box_save.setAttribute("y", event.pageY);
+    menue_box_save.setAttribute("width", 100);
+    menue_box_save.setAttribute("height", context_font_size);
+    menue_box_save.setAttribute("fill", "black");
+    menue_box_save.setAttribute("fill-opacity", "0%");
+    menue_box_save.addEventListener("mouseover", _vtContextMouseOver);
+    menue_box_save.addEventListener("mouseleave", _vtContextMouseLeave);
+    menue_box_save.addEventListener("mousedown", _vtSaveAsPng);
+    context_svg.appendChild(menue_box_save);
+    
+    div.appendChild(context_svg);
+    div.addEventListener("mousedown", _vtContextMouseDown);
+    document.body.appendChild(div);
+}
 
 //check setting
 let _vtCheckSetting = function(setting)
@@ -464,8 +586,16 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
             }
         }
 
-        if(("header_row" in setting) && setting.header_row){
-            col_header_line_width = setting.header_stroke_width;
+        if("header_row" in setting){
+            if(setting.header_row){
+                col_dir_line_width = 1;
+                if("stroke_width" in setting){
+                    col_header_line_width = setting.stroke_width;
+                }
+                if("header_stroke_width" in setting){
+                    col_header_line_width = setting.header_stroke_width;
+                }
+            }
         }
     }
 
@@ -490,8 +620,16 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
             }
         }
 
-        if(("header_col" in setting) && setting.header_col){
-            row_header_line_width = setting.header_stroke_width;
+        if("header_col" in setting){
+            if(setting.header_col){
+                row_header_line_width = 1;
+                if("stroke_width" in setting){
+                    row_header_line_width = setting.stroke_width;
+                }
+                if("header_stroke_width" in setting){
+                    row_header_line_width = setting.header_stroke_width;
+                }
+            }
         }
     }
 
@@ -501,7 +639,7 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
         //text width + margin left
         cellDataMatrix[i][0].x = margin_left;
         for(let j=1; j<cellDataMatrix[i].length; j++){
-            cellDataMatrix[i][j].x = cellDataMatrix[i][j-1].x + maxColWidths[j-1];
+            cellDataMatrix[i][j].x = cellDataMatrix[i][j-1].x + maxColWidths[j-1] + margin_left;
         }
         //+ margin right
         if(margin_right != 0){
@@ -680,6 +818,7 @@ let _vtCreateAndAppendSVG = function(setting, svg_size)
     elem.addEventListener('wheel', _vtZoomByWheel);
     elem.addEventListener('mousedown', _vtPanMousedown);
     elem.addEventListener('mousemove', _vtPanMouseMove);
+    elem.addEventListener('contextmenu', _vtAddContextmenu);
 
     //Push to Global element array
     elements.push(elem);
@@ -706,22 +845,77 @@ let _vtCreateAndAppendBackground = function(svg, setting, svg_size, asp)
     return background;
 }
 
+let _vtCreateAndAppendHeaderBackground = function(svg, setting, cellDataMatrix, svg_size, asp, numHeaderRow)
+{
+    if("header_background_color" in setting){
+        if("header_row" in setting){
+            if(setting.header_row){
+                let m_b = 0;
+                if("text_margin_bottom" in setting){
+                    m_b = setting.text_margin_bottom;
+                }
+
+                let back_row = document.createElementNS(theXmlns, "rect");
+                back_row.setAttribute("x", 0);
+                back_row.setAttribute("y", 0);
+                back_row.setAttribute("width", svg_size.w * asp);
+                back_row.setAttribute("height", (cellDataMatrix[numHeaderRow-1][0].y + m_b)*asp);
+                back_row.setAttribute("fill", setting.header_background_color);
+                svg.appendChild(back_row);
+            }
+        }
+
+        if("header_col" in setting){
+            if(setting.header_col){
+                let m_l = 0;
+                if("text_margin_left" in setting){
+                    m_l = setting.text_margin_left;
+                }
+
+                let back_col = document.createElementNS(theXmlns, "rect");
+                back_col.setAttribute("x", 0);
+                back_col.setAttribute("y", 0);
+                back_col.setAttribute("width", (cellDataMatrix[0][setting.header_col_pos].x - m_l)*asp);
+                back_col.setAttribute("height", svg_size.h * asp);
+                back_col.setAttribute("fill", setting.header_background_color);
+                svg.appendChild(back_col);
+            }
+        }
+    }
+}
+
 let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, asp, maxRowHeight)
 {
-    text_font_size = 10;
+    let text_font_size = 10.0;
     if("text_font_size" in setting){
         text_font_size = setting.text_font_size;
     }
 
-    text_font_stroke_width = 0.5;
+    let text_font_stroke_width = 0.1;
     if("text_font_stroke_width" in setting){
         text_font_stroke_width = setting.text_font_stroke_width;
     }
 
-    text_font_stroke = "black";
+    let text_font_stroke = "black";
     if("text_font_stroke" in setting){
         text_font_stroke = setting.text_font_stroke;
     }
+
+    let header_font_stroke = text_font_stroke;
+    if("header_font_stroke" in setting){
+        header_font_stroke = setting.header_font_stroke;
+    }
+
+    let header_font_stroke_width = text_font_stroke_width;
+    if("header_font_stroke_width" in setting){
+        header_font_stroke_width = setting.header_font_stroke_width;
+    }
+
+    let header_col_pos = 0;
+    if("header_col_pos" in setting){
+        header_col_pos = setting.header_col_pos;
+    }
+
 
     //header
     for(let i=0; i<divideHeader.length; i++){
@@ -729,10 +923,11 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
             if("value" in divideHeader[i][j]){
                 let text = document.createElementNS(theXmlns,"text");
                 text.setAttribute("x", cellDataMatrix[i][j].x*asp);
-                text.setAttribute("y", (cellDataMatrix[i][j].y - maxRowHeight[i]*0.15)*asp);
+                text.setAttribute("y", (cellDataMatrix[i][j].y - maxRowHeight[i]*text_offset)*asp);
                 text.setAttribute("font-size", text_font_size*asp);
-                text.setAttribute("stroke", text_font_stroke);
-                text.setAttribute("stroke-width", text_font_stroke_width*asp);
+                text.setAttribute("stroke", header_font_stroke);
+                text.setAttribute("fill", header_font_stroke);
+                text.setAttribute("stroke-width", header_font_stroke_width*asp);
                 text.textContent = divideHeader[i][j].value;
 
                 svg.appendChild(text);
@@ -745,10 +940,17 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
         for(let j=0; j<body[j].length; j++){
             let text = document.createElementNS(theXmlns,"text");
             text.setAttribute("x", cellDataMatrix[i+divideHeader.length][j].x*asp);
-            text.setAttribute("y", (cellDataMatrix[i+divideHeader.length][j].y - maxRowHeight[i+divideHeader.length]*0.15)*asp);
+            text.setAttribute("y", (cellDataMatrix[i+divideHeader.length][j].y - maxRowHeight[i+divideHeader.length]*text_offset)*asp);
             text.setAttribute("font-size", text_font_size*asp);
-            text.setAttribute("stroke", text_font_stroke);
-            text.setAttribute("stroke-width", text_font_stroke_width*asp);
+            if(j < header_col_pos){
+                text.setAttribute("stroke", header_font_stroke);
+                text.setAttribute("fill", header_font_stroke);
+                text.setAttribute("stroke-width", header_font_stroke_width*asp);
+            }else{
+                text.setAttribute("stroke", text_font_stroke);
+                text.setAttribute("fill", text_font_stroke);
+                text.setAttribute("stroke-width", text_font_stroke_width*asp);
+            }
             text.textContent = body[i][j];
 
             svg.appendChild(text);
@@ -758,7 +960,7 @@ let _vtPutContents = function(svg, setting, divideHeader, body, cellDataMatrix, 
 
 let _vtCreateAndAppendFrame = function(svg, setting, cellDataMatrix, asp, svg_size)
 {
-    let stroke_width = 1;
+    let stroke_width = 1.0;
     if("stroke_width" in setting){
         stroke_width = setting.stroke_width;
     }
@@ -899,11 +1101,17 @@ let _vtCreateAndAppendHeaderFrame = function(svg, setting, cellDataMatrix, asp, 
     if(!("row_dir_line" in setting) || setting.row_dir_line){
         if("header_row" in setting){
             if(setting.header_row){
-                let stroke_width = 3;
+                let stroke_width = 1;
+                if("stroke_width" in setting){
+                    stroke_width = setting.stroke_width;
+                }
                 if("header_stroke_width" in setting){
                     stroke_width = setting.header_stroke_width;
                 }
                 let stroke = "black";
+                if("stroke" in setting){
+                    stroke = setting.stroke;
+                }
                 if("header_stroke" in setting){
                     stroke = setting.header_stroke;
                 }
@@ -928,11 +1136,17 @@ let _vtCreateAndAppendHeaderFrame = function(svg, setting, cellDataMatrix, asp, 
     if(!("col_dir_line" in setting) || setting.col_dir_line){
         if("header_col" in setting){
             if(setting.header_col){
-                let stroke_width = 3;
+                let stroke_width = 1;
+                if("stroke_width" in setting){
+                    stroke_width = setting.stroke_width;
+                }
                 if("header_stroke_width" in setting){
                     stroke_width = setting.header_stroke_width;
                 }
                 let stroke = "black";
+                if("stroke" in setting){
+                    stroke = setting.stroke;
+                }
                 if("header_stroke" in setting){
                     stroke = setting.header_stroke;
                 }
@@ -958,11 +1172,17 @@ let _vtCreateAndAppendOuterFrame = function(svg, setting, svg_size, asp)
 {
     if("outer_frame" in setting){
         if(setting.outer_frame){
-            outer_frame_stroke_width = 5;
+            outer_frame_stroke_width = 1;
+            if("stroke_width" in setting){
+                outer_frame_stroke_width = setting.stroke_width;
+            }
             if("outer_frame_stroke_width" in setting){
                 outer_frame_stroke_width = setting.outer_frame_stroke_width;
             }
             outer_frame_stroke = "black";
+            if("stroke" in setting){
+                outer_frame_stroke = setting.stroke;
+            }
             if("outer_frame_stroke" in setting){
                 outer_frame_stroke = setting.outer_frame_stroke;
             }
@@ -1021,7 +1241,8 @@ function addVectorTable(setting, header, body)
     let svg_size = _vtCalSvgSize(setting, maxColWidths, maxRowHeights);
     let svg, asp;
     [svg, asp] = _vtCreateAndAppendSVG(setting, svg_size);
-    let background = _vtCreateAndAppendBackground(svg, setting, svg_size, asp);
+    _vtCreateAndAppendBackground(svg, setting, svg_size, asp);
+    _vtCreateAndAppendHeaderBackground(svg, setting, cellMatrix, svg_size, asp, divideHeader.length);
     _vtPutContents(svg, setting, divideHeader, body, cellMatrix, asp, maxRowHeights);
     _vtCreateAndAppendFrame(svg, setting, cellMatrix, asp, svg_size);
     _vtCreateAndAppendHeaderFrame(svg, setting, cellMatrix, asp, svg_size, divideHeader.length);

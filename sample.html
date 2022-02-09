@@ -13,35 +13,42 @@
             Hello, Vector Table
         </h1>
         <div id="idTest" style="width:60%; height: 66%;"></div>
-        <br>
-        <div id="idTest2" style="width: 300px; height: 20%;"></div>
 
         <script>
             const demo_setting = {
+                //=== Required ===
                 id: "idTest",
-                background_color: "#eeeeee",
+
+                //=== Optional ===
+                //--- Basic ---
                 row_dir_line: true,
                 col_dir_line: true,
-                outer_frame: true,
-                outer_frame_stroke_width: 4,
-                outer_frame_stroke: "#333",
-
-                header_row: true,
-                header_col: true,
-                header_stroke_width: 3,
-                header_stroke: "#555",
-                header_col_pos: 1,
-
+                //line shape
+                stroke_width: 2,
+                stroke: "#999",
+                //background color
+                background_color: "#eeeeee",
+                //text shape
+                text_font_size: 30,
+                text_font_stroke_width: 0.1,
+                text_font_stroke: "black",
                 text_margin_top: 0,
                 text_margin_bottom: 0,
                 text_margin_right: 5,
                 text_margin_left: 5,
-                text_font_size: 30,
-                text_font_stroke_width: 1,
-                text_font_stroke: "black",
-
-                stroke_width: 2,
-                stroke: "#999"
+                //Outer frame
+                outer_frame: true,
+                outer_frame_stroke_width: 4,
+                outer_frame_stroke: "#333",
+                //Header
+                header_row: true,
+                header_col: true,
+                header_col_pos: 1,
+                header_stroke_width: 3,
+                header_stroke: "#555",
+                header_font_stroke_width: 3,
+                header_font_stroke: "blue",
+                header_background_color: "#dddddd",
             };
 
             //Demo headerhohyou
@@ -94,10 +101,6 @@
             }
 
             addVectorTable(demo_setting, headerMatrix, dataMatrix);
-
-            //demo_setting.id = "idTest2";
-            //demo_setting.row_height = 10;
-            //addVectorTable(demo_setting, headerMatrix);
         </script>
     </body>
 </html>
