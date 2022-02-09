@@ -210,6 +210,7 @@ let _vtMouseUp = function(event)
 document.addEventListener('mouseup', _vtMouseUp);
 
 //contextmenu
+let contextmenuTarget;
 //cansel
 let _vtContextMouseDown = function(event){
     event.preventDefault();
@@ -232,6 +233,28 @@ let _vtContextMouseLeave = function(event)
     event.target.setAttribute("fill-opacity", "0%");
 }
 
+//save
+//mousedown
+let _vtSaveAsPng = function(event)
+{
+    let canvas = document.createElement("canvas");
+    let svgData = new XMLSerializer().serializeToString(contextmenuTarget);
+    canvas.width = contextmenuTarget.width.baseVal.value;
+    canvas.height = contextmenuTarget.height.baseVal.value;
+    let ctx = canvas.getContext('2d');
+    let image = new Image;
+
+    image.onload = () =>{
+        ctx.drawImage(image, 0, 0);
+        let a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.setAttribute("download", "image.png");
+        a.dispatchEvent(new MouseEvent("click"));
+    };
+    
+    image.src = 'data:image/svg+xml;charset=utf-8;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+}
+
 //main
 let _vtAddContextmenu = function(event)
 {
@@ -242,9 +265,9 @@ let _vtAddContextmenu = function(event)
         content.remove();
     });
 
-    let table = event.target;
-    while(!table.classList.contains(class_vtTable)){
-        table = table.parentElement;
+    contextmenuTarget = event.target;
+    while(!contextmenuTarget.classList.contains(class_vtTable)){
+        contextmenuTarget = contextmenuTarget.parentElement;
     }
 
     let ww = window.innerWidth;
@@ -297,6 +320,7 @@ let _vtAddContextmenu = function(event)
     menue_box_save.setAttribute("fill-opacity", "0%");
     menue_box_save.addEventListener("mouseover", _vtContextMouseOver);
     menue_box_save.addEventListener("mouseleave", _vtContextMouseLeave);
+    menue_box_save.addEventListener("mousedown", _vtSaveAsPng);
     context_svg.appendChild(menue_box_save);
     
     div.appendChild(context_svg);
