@@ -6,7 +6,7 @@ const class_vtTable = "_vtTable";
 
 const zoom_delta = 1.1;
 const text_offset = 0.2;
-const contextmenu_num = 2;
+const contextmenu_num = 1;
 const context_font_size = 15;
 
 //Window Resize Event
