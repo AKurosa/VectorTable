@@ -845,6 +845,36 @@ let _vtCreateAndAppendBackground = function(svg, setting, svg_size, asp)
     return background;
 }
 
+let _vtCreateAndAppendStripes = function(svg, setting, cellDataMatrix, svg_size, asp, numHeaderRow)
+{
+    if("shima_shima" in setting){
+        let fill_color = setting.shima_shima;
+        let m_t = 0;
+        if("text_margin_top" in setting){
+            m_t = setting.text_margin_top;
+        }
+        let m_b = 0;
+        if("text_margin_bottom" in setting){
+            m_b = setting.text_margin_bottom;
+        }
+        let stroke_width = 1;
+        if("stroke_width" in setting){
+            stroke_width = setting.stroke_width;
+        }
+        for(let i=numHeaderRow; i<cellDataMatrix.length; i++){
+            if((i-numHeaderRow)%2){
+                let stripe = document.createElementNS(theXmlns, "rect");
+                stripe.setAttribute("x", 0);
+                stripe.setAttribute("y", (cellDataMatrix[i-1][0].y + m_b) * asp);
+                stripe.setAttribute("width", svg_size.w * asp);
+                stripe.setAttribute("height", (cellDataMatrix[i][0].h + stroke_width + m_b + m_t) * asp);
+                stripe.setAttribute("fill", fill_color);
+                svg.appendChild(stripe);
+            }
+        }
+    }
+}
+
 let _vtCreateAndAppendHeaderBackground = function(svg, setting, cellDataMatrix, svg_size, asp, numHeaderRow)
 {
     if("header_background_color" in setting){
@@ -1242,6 +1272,7 @@ function addVectorTable(setting, header, body)
     let svg, asp;
     [svg, asp] = _vtCreateAndAppendSVG(setting, svg_size);
     _vtCreateAndAppendBackground(svg, setting, svg_size, asp);
+    _vtCreateAndAppendStripes(svg, setting, cellMatrix, svg_size, asp, divideHeader.length);
     _vtCreateAndAppendHeaderBackground(svg, setting, cellMatrix, svg_size, asp, divideHeader.length);
     _vtPutContents(svg, setting, divideHeader, body, cellMatrix, asp, maxRowHeights);
     _vtCreateAndAppendFrame(svg, setting, cellMatrix, asp, svg_size);

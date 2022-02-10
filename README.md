@@ -4,9 +4,14 @@ The html table using SVG and javascript
 ## How to use
 * See "sample.html"
 
-## Contextmenue
-### Save as PNG:
-* Download PNG image of a target table.
+## Mouse menu
+### Contextmenue
+* Save as PNG:
+  * Download PNG image of a target table.
+### Mouse Wheel
+* Zoom
+### Mouse Drag
+* Pan 
 
 ## Setting
 ### Required
@@ -127,3 +132,9 @@ The html table using SVG and javascript
   * Data type is "svg color".
     * "black", "gray", "#aab", "#aabbcc", ...
   * Default value is same with "background_color".
+
+# Stripes
+* shima_shima:
+  * For set border color for even number of row in body.
+  * Data type is "svg color".
+    * "black", "gray", "#aab", "#aabbcc", ...
