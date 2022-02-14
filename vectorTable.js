@@ -452,6 +452,18 @@ let _vtGetTextWH = function(element)
 let _vtGetTextWHList = function(setting, divideHeader, body)
 {
     let cellDataMatrix = new Array();
+    let text_font_size = 10.0;
+    if("text_font_size" in setting){
+        text_font_size = setting.text_font_size;
+    }
+    let text_font_stroke = "black";
+    if("text_font_stroke" in setting){
+        text_font_stroke = setting.text_font_stroke;
+    }
+    let text_font_stroke_width = 0.1;
+    if("text_font_stroke_width" in setting){
+        text_font_stroke_width = setting.text_font_stroke_width;
+    }
 
     //header
     divideHeader.forEach(line =>{
@@ -462,9 +474,9 @@ let _vtGetTextWHList = function(setting, divideHeader, body)
                 let text = document.createElementNS(theXmlns, "text");
                 text.setAttribute('x', 0);
                 text.setAttribute('y', 0);
-                text.setAttribute('font-size', setting.text_font_size);
-                text.setAttribute("stroke", setting.text_font_stroke);
-                text.setAttribute("stroke-width", setting.text_font_stroke_width);
+                text.setAttribute('font-size', text_font_size);
+                text.setAttribute("stroke", text_font_stroke);
+                text.setAttribute("stroke-width", text_font_stroke_width);
                 text.textContent = cell.value;
 
                 [cellData.w, cellData.h] = _vtGetTextWH(text);
@@ -518,9 +530,9 @@ let _vtGetTextWHList = function(setting, divideHeader, body)
             let text = document.createElementNS(theXmlns, "text");
             text.setAttribute('x', 0);
             text.setAttribute('y', 0);
-            text.setAttribute('font-size', setting.text_font_size);
-            text.setAttribute("stroke", setting.text_font_stroke);
-            text.setAttribute("stroke-width", setting.text_font_stroke_width);
+            text.setAttribute('font-size', text_font_size);
+            text.setAttribute("stroke", text_font_stroke);
+            text.setAttribute("stroke-width", text_font_stroke_width);
 
             //TODO type
             text.textContent = cell;
@@ -574,25 +586,36 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
         margin_right = setting.text_margin_right;
     }
 
-    let col_dir_line_width = 1;
+    let col_dir_line_width = 0;
     let col_outer_line_width = 0;
     let col_header_line_width = 0;
     if(!("col_dir_line" in setting) || setting.col_dir_line){
         if("stroke_width" in setting){
             col_dir_line_width = setting.stroke_width;
+        }else{
+            col_dir_line_width = 1;
         }
 
         if("outer_frame" in setting){
             if(setting.outer_frame){
-                col_outer_line_width = setting.outer_frame_stroke_width;
+                if("stroke_width" in setting){
+                    col_outer_line_width = setting.stroke_width;
+                }else{
+                    col_outer_line_width = 1;
+                }
+                if("outer_frame_stroke_width" in setting){
+                    col_outer_line_width = setting.outer_frame_stroke_width;
+                }
+                
             }
         }
 
         if("header_row" in setting){
             if(setting.header_row){
-                col_dir_line_width = 1;
                 if("stroke_width" in setting){
                     col_header_line_width = setting.stroke_width;
+                }else{
+                    col_header_line_width = 1;
                 }
                 if("header_stroke_width" in setting){
                     col_header_line_width = setting.header_stroke_width;
@@ -602,8 +625,6 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
     }
 
     let margin_top = 0;
-    let row_outer_line_width = 0;
-    let row_header_line_width = 0;
     if("text_margin_top" in setting){
         margin_top = setting.text_margin_top;
     }
@@ -613,14 +634,25 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
     }
 
     let row_dir_line_width = 0;
-    if(!("row_dir_line" in setting) || setting.row_dir_line){
+    let row_outer_line_width = 0;
+    let row_header_line_width = 0;
+    if((!("row_dir_line" in setting)) || setting.row_dir_line){
         if("stroke_width" in setting){
             row_dir_line_width = setting.stroke_width;
+        }else{
+            row_dir_line_width = 1;
         }
         
         if("outer_frame" in setting){
             if(setting.outer_frame){
-                row_outer_line_width = setting.outer_frame_stroke_width;
+                if("stroke_width" in setting){
+                    row_outer_line_width = setting.stroke_width;
+                }else{
+                    row_outer_line_width = 1;
+                }
+                if("outer_frame_stroke_width" in setting){
+                    row_outer_line_width = setting.outer_frame_stroke_width;
+                }   
             }
         }
 
@@ -629,6 +661,8 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
                 row_header_line_width = 1;
                 if("stroke_width" in setting){
                     row_header_line_width = setting.stroke_width;
+                }else{
+                    row_header_line_width = 1;
                 }
                 if("header_stroke_width" in setting){
                     row_header_line_width = setting.header_stroke_width;
@@ -667,7 +701,11 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
         //+ header line width
         if(col_header_line_width != 0){
             let tempWidth = col_header_line_width - col_dir_line_width;
-            for(let j=setting.header_col_pos; j<cellDataMatrix[i].length; j++){
+            let header_col_pos = 0;
+            if("header_col_pos" in setting){
+                header_col_pos = setting.header_col_pos;
+            }
+            for(let j=header_col_pos; j<cellDataMatrix[i].length; j++){
                 cellDataMatrix[i][j].x += tempWidth;
             }
         }
@@ -727,7 +765,14 @@ let _vtCalSvgSize = function(setting, maxColWidths, maxRowHeights)
     if(flg_colLine){
         if("outer_frame" in setting){
             if(setting.outer_frame){
-                svg_size.w += setting.outer_frame_stroke_width * 2;
+                let ofsw = 1;
+                if("stroke_width" in setting){
+                    ofsw = setting.stroke_width;
+                }
+                if("outer_frame_stroke_width" in setting){
+                    ofsw = setting.outer_frame_stroke_width
+                }
+                svg_size.w += ofsw * 2;
                 numCol += 2;
             }
         }
@@ -769,13 +814,27 @@ let _vtCalSvgSize = function(setting, maxColWidths, maxRowHeights)
     if(flg_rowLine){
         if("outer_frame" in setting){
             if(setting.outer_frame){
-                svg_size.h += setting.outer_frame_stroke_width * 2;
+                let lw = 1;
+                if("stroke_width" in setting){
+                    lw = setting.stroke_width;
+                }
+                if("outer_frame_stroke_width" in setting){
+                    lw = setting.outer_frame_stroke_width;
+                }
+                svg_size.h += lw * 2;
                 numRow += 2;
             }
         }
         if("header_row" in setting){
             if(setting.header_row){
-                svg_size.h += setting.header_stroke_width;
+                let lw = 1;
+                if("stroke_width" in setting){
+                    lw = setting.stroke_width;
+                }
+                if("header_stroke_width" in setting){
+                    lw = setting.header_stroke_width;
+                }
+                svg_size.h += lw;
                 numRow++;
             }
         }
@@ -914,10 +973,15 @@ let _vtCreateAndAppendHeaderBackground = function(svg, setting, cellDataMatrix, 
                     m_l = setting.text_margin_left;
                 }
 
+                let header_col_pos = 0;
+                if("header_col_pos" in setting){
+                    header_col_pos = setting.header_col_pos;
+                }
+
                 let back_col = document.createElementNS(theXmlns, "rect");
                 back_col.setAttribute("x", 0);
                 back_col.setAttribute("y", 0);
-                back_col.setAttribute("width", (cellDataMatrix[0][setting.header_col_pos].x - m_l)*asp);
+                back_col.setAttribute("width", (cellDataMatrix[0][header_col_pos].x - m_l)*asp);
                 back_col.setAttribute("height", svg_size.h * asp);
                 back_col.setAttribute("fill", setting.header_background_color);
                 svg.appendChild(back_col);
@@ -1022,7 +1086,7 @@ let _vtCreateAndAppendFrame = function(svg, setting, cellDataMatrix, asp, svg_si
     }
 
     //row dir line
-    if(!("row_dir_line" in setting) || setting.row_dir_line){
+    if((!("row_dir_line" in setting)) || setting.row_dir_line){
         let line_u = document.createElementNS(theXmlns, "line");
         line_u.setAttribute("x1", 0);
         line_u.setAttribute("x2", svg_size.w*asp);
@@ -1140,7 +1204,7 @@ let _vtCreateAndAppendFrame = function(svg, setting, cellDataMatrix, asp, svg_si
 let _vtCreateAndAppendHeaderFrame = function(svg, setting, cellDataMatrix, asp, svg_size, numHeaderRow)
 {
     //row
-    if(!("row_dir_line" in setting) || setting.row_dir_line){
+    if((!("row_dir_line" in setting)) || setting.row_dir_line){
         if("header_row" in setting){
             if(setting.header_row){
                 let stroke_width = 1;
@@ -1196,10 +1260,14 @@ let _vtCreateAndAppendHeaderFrame = function(svg, setting, cellDataMatrix, asp, 
                 if("text_margin_left" in setting){
                     m_l = setting.text_margin_left;
                 }
+                header_col_pos = 0;
+                if("header_col_pos" in setting){
+                    header_col_pos = setting.header_col_pos;
+                }
 
                 let line = document.createElementNS(theXmlns, "line");
-                line.setAttribute("x1", (cellDataMatrix[0][setting.header_col_pos].x - m_l - stroke_width/2)*asp);
-                line.setAttribute("x2", (cellDataMatrix[0][setting.header_col_pos].x - m_l - stroke_width/2)*asp);
+                line.setAttribute("x1", (cellDataMatrix[0][header_col_pos].x - m_l - stroke_width/2)*asp);
+                line.setAttribute("x2", (cellDataMatrix[0][header_col_pos].x - m_l - stroke_width/2)*asp);
                 line.setAttribute("y1", 0);
                 line.setAttribute("y2", svg_size.h*asp);
                 line.setAttribute("stroke-width", stroke_width*asp);
@@ -1228,7 +1296,7 @@ let _vtCreateAndAppendOuterFrame = function(svg, setting, svg_size, asp)
             if("outer_frame_stroke" in setting){
                 outer_frame_stroke = setting.outer_frame_stroke;
             }
-            if(!("row_dir_line" in setting) || setting.row_dir_line){
+            if((!("row_dir_line" in setting)) || setting.row_dir_line){
                 let line_t = document.createElementNS(theXmlns, "line");
                 line_t.setAttribute("x1", 0);
                 line_t.setAttribute("x2", svg_size.w*asp);
@@ -1322,12 +1390,12 @@ var vt_simple_black_hc1 = {
 
 var vt_stripes_black = {
     id: "",
-    //stroke_width: 1,
     //row_dir_line: false,
-    //stroke: "white",
-    //header_background_color: "black",
-    //header_font_stroke_width: 1,
-    //header_font_stroke: "white",
+    stroke: "white",
+    header_row: true,
+    header_background_color: "black",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "white",
 
-    //shima_shima: "gray",
+    shima_shima: "gray",
 };
