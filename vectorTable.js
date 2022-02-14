@@ -574,11 +574,13 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
         margin_right = setting.text_margin_right;
     }
 
-    let col_dir_line_width = 0;
+    let col_dir_line_width = 1;
     let col_outer_line_width = 0;
     let col_header_line_width = 0;
     if(!("col_dir_line" in setting) || setting.col_dir_line){
-        col_dir_line_width = setting.stroke_width;
+        if("stroke_width" in setting){
+            col_dir_line_width = setting.stroke_width;
+        }
 
         if("outer_frame" in setting){
             if(setting.outer_frame){
@@ -612,8 +614,10 @@ let _vtSetCharPos = function(setting, cellDataMatrix, maxColWidths, maxRowHeight
 
     let row_dir_line_width = 0;
     if(!("row_dir_line" in setting) || setting.row_dir_line){
-        row_dir_line_width = setting.stroke_width;
-
+        if("stroke_width" in setting){
+            row_dir_line_width = setting.stroke_width;
+        }
+        
         if("outer_frame" in setting){
             if(setting.outer_frame){
                 row_outer_line_width = setting.outer_frame_stroke_width;
@@ -734,7 +738,11 @@ let _vtCalSvgSize = function(setting, maxColWidths, maxRowHeights)
             }
         }
         let n = maxColWidths.length + 1 - numCol;
-        svg_size.w += n * setting.stroke_width;
+        let stroke_width = 1;
+        if("stroke_width" in setting){
+            stroke_width = setting.stroke_width;
+        }
+        svg_size.w += n * stroke_width;
     }
 
     let margin_width = 0;
@@ -772,7 +780,11 @@ let _vtCalSvgSize = function(setting, maxColWidths, maxRowHeights)
             }
         }
         let n = maxRowHeights.length + 1 - numRow; 
-        svg_size.h += n * setting.stroke_width;
+        let stroke_width = 1;
+        if("stroke_width" in setting){
+            stroke_width = setting.stroke_width;
+        }
+        svg_size.h += n * stroke_width;
     }
 
     let margin_height = 0;
@@ -1279,3 +1291,43 @@ function addVectorTable(setting, header, body)
     _vtCreateAndAppendHeaderFrame(svg, setting, cellMatrix, asp, svg_size, divideHeader.length);
     _vtCreateAndAppendOuterFrame(svg, setting, svg_size, asp);
 }
+
+var vt_simple_black = {
+    id: "",
+    stroke_width: 1,
+    header_row: true,
+    header_stroke_width: 3,
+    header_font_stroke_width: 1,
+    outer_frame: true,
+    outer_frame_stroke_width: 6,
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+};
+
+var vt_simple_black_hc1 = {
+    id: "",
+    stroke_width: 1,
+    header_row: true,
+    header_col: true,
+    header_stroke_width: 3,
+    header_font_stroke_width: 1,
+    header_col_pos: 1,
+    outer_frame: true,
+    outer_frame_stroke_width: 6,
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+};
+
+var vt_stripes_black = {
+    id: "",
+    //stroke_width: 1,
+    //row_dir_line: false,
+    //stroke: "white",
+    //header_background_color: "black",
+    //header_font_stroke_width: 1,
+    //header_font_stroke: "white",
+
+    //shima_shima: "gray",
+};
