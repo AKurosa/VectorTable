@@ -1,6 +1,8 @@
 # VectorTable
 The html table using SVG and javascript
 
+![vt_stripes_green](DesignTemplate/image/vt_stripes_green.png)
+
 ## How to use
 * See "sample.html"
 
@@ -12,6 +14,9 @@ The html table using SVG and javascript
 * Zoom
 ### Mouse Drag
 * Pan 
+
+## Design Template
+[Click this link](./DesignTemplate/DesignTemplate.md)
 
 ## Setting
 ### Required

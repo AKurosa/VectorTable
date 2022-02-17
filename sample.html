@@ -12,7 +12,9 @@
         <h1>
             Hello, Vector Table
         </h1>
-        <div id="idTest" style="width:60%; height: 66%;"></div>
+        <div id="idTest" style="width:30%; height: 33%;"></div>
+        <br>
+        <div id="idTest2" style="width: 600px; height: 400px;"></div>
 
         <script>
             const demo_setting = {
@@ -93,7 +95,7 @@
             headerMatrix.push(headerLine2);
 
             let dataMatrix = new Array();
-            for(let i=0; i<20; i++){
+            for(let i=0; i<10; i++){
                 let dataLine = new Array();
                 dataLine.push(i);
                 for(let j=0; j<5; j++){
@@ -101,8 +103,11 @@
                 }
                 dataMatrix.push(dataLine);
             }
-
             addVectorTable(demo_setting, headerMatrix, dataMatrix);
+
+            //Use Design Template
+            vt_pale_gray_hc1.id = "idTest2";
+            addVectorTable(vt_pale_gray_hc1, headerMatrix, dataMatrix);
         </script>
     </body>
 </html>

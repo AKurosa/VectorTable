@@ -778,7 +778,14 @@ let _vtCalSvgSize = function(setting, maxColWidths, maxRowHeights)
         }
         if("header_col" in setting){
             if(setting.header_col){
-                svg_size.w += setting.header_stroke_width;
+                let hsw = 1;
+                if("stroke_width" in setting){
+                    hsw = setting.stroke_width;
+                }
+                if("header_stroke_width" in setting){
+                    hsw = setting.header_stroke_width;
+                }
+                svg_size.w += hsw;
                 numCol++;
             }
         }
@@ -938,7 +945,7 @@ let _vtCreateAndAppendStripes = function(svg, setting, cellDataMatrix, svg_size,
                 stripe.setAttribute("x", 0);
                 stripe.setAttribute("y", (cellDataMatrix[i-1][0].y + m_b) * asp);
                 stripe.setAttribute("width", svg_size.w * asp);
-                stripe.setAttribute("height", (cellDataMatrix[i][0].h + stroke_width + m_b + m_t) * asp);
+                stripe.setAttribute("height", (cellDataMatrix[i][0].h + stroke_width/2 + m_b + m_t) * asp);
                 stripe.setAttribute("fill", fill_color);
                 svg.appendChild(stripe);
             }
@@ -955,12 +962,22 @@ let _vtCreateAndAppendHeaderBackground = function(svg, setting, cellDataMatrix, 
                 if("text_margin_bottom" in setting){
                     m_b = setting.text_margin_bottom;
                 }
+                let stroke_width = 0;
+                if(!("row_dir_line" in setting) || setting.row_dir_line){
+                    stroke_width = 1;
+                    if("stroke_width" in setting){
+                        stroke_width = setting.stroke_width;
+                    }
+                    if("header_stroke_width" in setting){
+                        stroke_width = setting.header_stroke_width
+                    }
+                }
 
                 let back_row = document.createElementNS(theXmlns, "rect");
                 back_row.setAttribute("x", 0);
                 back_row.setAttribute("y", 0);
                 back_row.setAttribute("width", svg_size.w * asp);
-                back_row.setAttribute("height", (cellDataMatrix[numHeaderRow-1][0].y + m_b)*asp);
+                back_row.setAttribute("height", (cellDataMatrix[numHeaderRow-1][0].y + m_b - stroke_width)*asp);
                 back_row.setAttribute("fill", setting.header_background_color);
                 svg.appendChild(back_row);
             }
@@ -1097,7 +1114,7 @@ let _vtCreateAndAppendFrame = function(svg, setting, cellDataMatrix, asp, svg_si
         svg.appendChild(line_u);
 
         for(let i=0; i<cellDataMatrix.length-1; i++){
-            let y = (cellDataMatrix[i][0].y + m_b + stroke_width/2)*asp;
+            let y = (cellDataMatrix[i][0].y + m_b - stroke_width/2)*asp;
             if(cellDataMatrix[i][0].row){
                 let line = document.createElementNS(theXmlns, "line");
                 line.setAttribute("x1", 0);
@@ -1390,12 +1407,188 @@ var vt_simple_black_hc1 = {
 
 var vt_stripes_black = {
     id: "",
-    //row_dir_line: false,
     stroke: "white",
+    stroke_width: 1.5,
+    background_color: "#f9f9f9",
     header_row: true,
     header_background_color: "black",
     header_font_stroke_width: 0.5,
     header_font_stroke: "white",
-
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
     shima_shima: "gray",
+};
+
+var vt_stripes_blue = {
+    id: "",
+    stroke: "white",
+    stroke_width: 1.5,
+    background_color: "#fffff9",
+    header_row: true,
+    header_background_color: "#0000e1",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "white",
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#97bdff",
+};
+
+var vt_stripes_green = {
+    id: "",
+    stroke: "white",
+    stroke_width: 1.5,
+    background_color: "#fafaff",
+    header_row: true,
+    header_background_color: "#339900",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "white",
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#e1eec1",
+};
+
+var vt_stripes_orange = {
+    id: "",
+    stroke: "white",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_background_color: "#f15922",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "white",
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#ffe0b6",
+};
+
+var vt_pale_gray = {
+    id: "",
+    stroke: "#000000",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_background_color: "#dddddd",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#000000",
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#eeeeee",
+};
+
+var vt_pale_gray_hc1 = {
+    id: "",
+    stroke: "#000000",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_col: true,
+    header_background_color: "#dddddd",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#000000",
+    header_col_pos: 1,
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#eeeeee",
+};
+
+var vt_pale_blue = {
+    id: "",
+    stroke: "#0c4da2",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_background_color: "#97cdf3",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#0c4da2",
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#dbedf0",
+};
+
+var vt_pale_blue_hc1 = {
+    id: "",
+    stroke: "#0c4da2",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_col: true,
+    header_background_color: "#97cdf3",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#0c4da2",
+    header_col_pos: 1,
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#dbedf0",
+};
+
+var vt_pale_green = {
+    id: "",
+    stroke: "#339900",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_background_color: "#c9f1c2",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#339900",
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#e9fec9",
+};
+
+var vt_pale_green_hc1 = {
+    id: "",
+    stroke: "#339900",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_col: true,
+    header_background_color: "#c9f1c2",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#339900",
+    header_col_pos: 1,
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#e9fec9",
+};
+
+var vt_pale_orange = {
+    id: "",
+    stroke: "#f37053",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_background_color: "#ffe0b6",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#f0821e",
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#fff0cf",
+};
+
+var vt_pale_orange_hc1 = {
+    id: "",
+    stroke: "#f37053",
+    stroke_width: 1.5,
+    background_color: "#fffffa",
+    header_row: true,
+    header_col: true,
+    header_background_color: "#ffe0b6",
+    header_font_stroke_width: 0.5,
+    header_font_stroke: "#f0821e",
+    header_col_pos: 1,
+    text_font_size: 20,
+    text_margin_right: 5,
+    text_margin_left: 5,
+    shima_shima: "#fff0cf",
 };
