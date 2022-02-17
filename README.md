@@ -138,7 +138,7 @@ The html table using SVG and javascript
     * "black", "gray", "#aab", "#aabbcc", ...
   * Default value is same with "background_color".
 
-# Stripes
+#### Stripes
 * shima_shima:
   * For set border color for even number of row in body.
   * Data type is "svg color".
