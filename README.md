@@ -1,5 +1,9 @@
 # VectorTable
-The html table using SVG and javascript
+The html table using SVG and javascript.
+
+This project is old. Re-coded by TypeScript.
+
+see: ![link](https://github.com/AKurosa/VectorTable.ts)
 
 ![vt_stripes_green](DesignTemplate/image/vt_stripes_green.png)
 
@@ -114,6 +118,7 @@ The html table using SVG and javascript
 * header_col_pos:
   * For set number of header column.
   * Data type is "int".
+  * Default value is [ 0 ].
 * header_stroke_width:
   * For set header's line width.
   * Data type is "float".
@@ -132,7 +137,7 @@ The html table using SVG and javascript
   * Data type is "svg color".
     * "black", "gray", "#aab", "#aabbcc", ...
   * Default value is same with "text_font_stroke".
-  * header_background_color:
+* header_background_color:
   * For set header's background color.
   * Data type is "svg color".
     * "black", "gray", "#aab", "#aabbcc", ...
